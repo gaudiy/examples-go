@@ -9,7 +9,7 @@ COPY cmd /workspace/cmd
 COPY internal /workspace/internal
 RUN go build -o demoserver ./cmd/demoserver
 
-FROM alpine
+FROM alpine AS connect-go-demoserver
 RUN apk add --update --no-cache ca-certificates tzdata && rm -rf /var/cache/apk/*
 COPY --from=builder /workspace/demoserver /usr/local/bin/demoserver
 CMD [ "/usr/local/bin/demoserver", "--server-stream-delay=500ms" ]

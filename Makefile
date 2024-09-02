@@ -85,3 +85,19 @@ $(BIN)/protoc-gen-go: Makefile
 $(BIN)/protoc-gen-connect-go: Makefile go.mod
 	@mkdir -p $(@D)
 	$(GO) install connectrpc.com/connect/cmd/protoc-gen-connect-go
+
+##@ docker
+GCP_PROJECT ?= gaudiy-develop-tokyo
+SERVICE_NAME = connect-go-demoserver
+GIT_REVISION ?= $(shell git rev-parse --short=12 --verify HEAD)
+VERSION=$(shell echo $$VERSION)
+
+DOCKER_BUILDER = desktop-linux
+DOCKER_BUILD_TARGET = ${SERVICE_NAME}
+DOCKER_BUILD_TAG = ${GIT_REVISION}
+DOCKER_BUILD_TYPE ?= docker
+DOCKER_BUILD_FLAGS ?= --platform linux/amd64 --build-arg VERSION=${VERSION} --build-arg GIT_REVISION_FULL=${GIT_REVISION_FULL} --secret id=GITHUB_TOKEN --target ${DOCKER_BUILD_TARGET} --output type=${DOCKER_BUILD_TYPE},name=asia-northeast1-docker.pkg.dev/${GCP_PROJECT}/${SERVICE_NAME}/server:${DOCKER_BUILD_TAG}
+
+.PHONY: docker/build
+docker/build:
+	@GITHUB_TOKEN=${GITHUB_TOKEN} docker builder --builder=${DOCKER_BUILDER} build --pull --rm ${DOCKER_BUILD_FLAGS} .

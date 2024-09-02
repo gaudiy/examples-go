@@ -194,12 +194,12 @@ func main() {
 		grpcreflect.NewStaticReflector(elizav1connect.ElizaServiceName),
 		compress1KB,
 	))
-	addr := "localhost:8080"
-	if port := os.Getenv("PORT"); port != "" {
-		addr = ":" + port
+	port := "8080"
+	if p := os.Getenv("PORT"); p != "" {
+		port = p
 	}
 	srv := &http.Server{
-		Addr: addr,
+		Addr: fmt.Sprintf(":%s", port),
 		Handler: h2c.NewHandler(
 			newCORS().Handler(mux),
 			&http2.Server{},
@@ -212,6 +212,7 @@ func main() {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 	go func() {
+		log.Printf("Listening on %s", srv.Addr)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("HTTP listen and serve: %v", err)
 		}
